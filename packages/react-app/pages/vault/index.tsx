@@ -6,7 +6,6 @@ import { BrowserProvider, Contract, formatUnits } from "ethers";
 import { CurrencyDollarIcon, CurrencyPoundIcon } from "@heroicons/react/24/outline";
 import TransactionList from '@/components/TransactionList';
 import { BigNumber } from "alchemy-sdk";
-import { EvmPriceServiceConnection } from "@pythnetwork/pyth-evm-js";
 import { parseEther } from 'viem';
 
 
@@ -17,13 +16,13 @@ const Loader = ({ alt }: { alt?: boolean }) => (
 
 
 export default function Home() {
-  const cUsdTokenAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1" //"0x765DE816845861e75A25fCA122bb6898B8B1282a";
+  const USDCTokenAddress = "0x64544969ed7EBf5f083679233325356EbE738930";
 
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [cusdBalance, setCusdBalance] = useState('');
+  const [USDCBalance, setUSDCBalance] = useState('');
   const [tokenBalance, setTokenBalance] = useState('');
-  const [selectedToken, setSelectedToken] = useState('cUSD');
+  const [selectedToken, setSelectedToken] = useState('USDC');
   const [isApproved, setIsApproved] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isWaitingTx, setIsWaitingTx] = useState(false);
@@ -47,7 +46,7 @@ export default function Home() {
         if (tokenBalance !== undefined) {
           const tokenBalanceBigInt = formatUnits(tokenBalance, 0);
           setTokenBalance(tokenBalanceBigInt.toString());
-          setCusdBalance(tokenBalanceBigInt.toString());
+          setUSDCBalance(tokenBalanceBigInt.toString());
         }
       } catch (error) {
         console.error("Error fetching yield balance");
@@ -81,7 +80,7 @@ export default function Home() {
         const depositValue = parseEther(depositAmount.toString());
         const gasLimit = parseInt("600000");
 
-        const tokenAddress = cUsdTokenAddress;
+        const tokenAddress = USDCTokenAddress;
         const tokenAbi = [
           "function allowance(address owner, address spender) view returns (uint256)",
           "function approve(address spender, uint256 amount) returns (bool)"
@@ -198,8 +197,8 @@ export default function Home() {
               <h3 className="font-semibold text-black mb-4 text-lg">My Savings</h3>
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />cUSD:</span>
-                  <span className="text-black text-2xl font-bold">{cusdBalance} cUSD</span>
+                  <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />USDC:</span>
+                  <span className="text-black text-2xl font-bold">{USDCBalance} USDC</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600"><CurrencyPoundIcon className="mr-2 text-black" />AST:</span>
@@ -214,7 +213,7 @@ export default function Home() {
                   onChange={handleTokenChange}
                   className="w-full rounded-md p-2 shadow bg-black text-white hover:bg-prosperity hover:text-black"
                 >
-                  <option value="cUSD"><CurrencyDollarIcon className="mr-2" />cUSD</option>
+                  <option value="USDC"><CurrencyDollarIcon className="mr-2" />USDC</option>
                 </select>
               </div>
             </div>

@@ -17,15 +17,15 @@ const Loader = ({ alt }: { alt?: boolean }) => (
 
 
 export default function Home() {
-  const cUsdTokenAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1" //"0x765DE816845861e75A25fCA122bb6898B8B1282a";
-  const celoAddress = "0x0000000000000000000000000000000000000000";
+  const USDCTokenAddress = "0x64544969ed7EBf5f083679233325356EbE738930";
+  const BNBAddress = "0x0000000000000000000000000000000000000000";
 
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [celoBalance, setCeloBalance] = useState('');
-  const [cusdBalance, setCusdBalance] = useState('');
+  const [BNBBalance, setBNBBalance] = useState('');
+  const [USDCBalance, setUSDCBalance] = useState('');
   const [tokenBalance, setTokenBalance] = useState('');
-  const [selectedToken, setSelectedToken] = useState('cUSD');
+  const [selectedToken, setSelectedToken] = useState('USDC');
   const [isApproved, setIsApproved] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isWaitingTx, setIsWaitingTx] = useState(false);
@@ -75,14 +75,14 @@ export default function Home() {
         const contract = new Contract(contractAddress, abi, signer);
 
         const balanceStruct = await contract.balances(userAddress);
-        if (balanceStruct && balanceStruct.celoBalance !== undefined) {
-          const celoBalanceBigInt = formatUnits(balanceStruct.celoBalance, 18);
-          setCeloBalance(celoBalanceBigInt.toString());
+        if (balanceStruct && balanceStruct.BNBBalance !== undefined) {
+          const BNBBalanceBigInt = formatUnits(balanceStruct.BNBBalance, 18);
+          setBNBBalance(BNBBalanceBigInt.toString());
 
-          const cUsdBalance = await contract.getBalance(userAddress, cUsdTokenAddress);
-          if (cUsdBalance !== undefined) {
-            const cUsdBalanceBigInt = formatUnits(cUsdBalance, 18);
-            setCusdBalance(cUsdBalanceBigInt.toString());
+          const USDCBalance = await contract.getBalance(userAddress, USDCTokenAddress);
+          if (USDCBalance !== undefined) {
+            const USDCBalanceBigInt = formatUnits(USDCBalance, 18);
+            setUSDCBalance(USDCBalanceBigInt.toString());
           }
         }
       } catch (error) {
@@ -142,7 +142,7 @@ export default function Home() {
         const depositValue = parseEther(depositAmount.toString());
         const gasLimit = parseInt("600000");
 
-        const tokenAddress = selectedToken === 'cUSD' ? cUsdTokenAddress : celoAddress;
+        const tokenAddress = selectedToken === 'USDC' ? USDCTokenAddress : BNBAddress;
         const tokenAbi = [
           "function allowance(address owner, address spender) view returns (uint256)",
           "function approve(address spender, uint256 amount) returns (bool)"
@@ -193,25 +193,25 @@ export default function Home() {
         const gasLimit = parseInt("6000000");
 
         let tx;
-        if (selectedToken === 'cUSD') {
+        if (selectedToken === 'USDC') {
           const connection = new EvmPriceServiceConnection(
             "https://hermes.pyth.network"
           );
-          const priceIds = ["0x7d669ddcdd23d9ef1fa9a9cc022ba055ec900e91c4cb960f3c20429d4447a411" as any];
+          const priceIds = ["0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f" as any];
           const priceFeedUpdateData =
             await connection.getPriceFeedsUpdateData(priceIds);
           setFeedUpdateData(priceFeedUpdateData);
-          tx = await contract.performUpkeep(cUsdTokenAddress, depositValue, feedUpdateData, { gasLimit });
+          tx = await contract.performUpkeep(USDCTokenAddress, depositValue, feedUpdateData, { gasLimit });
         }
-        else if (selectedToken === 'CELO') {
+        else if (selectedToken === 'BNB') {
           const connection = new EvmPriceServiceConnection(
             "https://hermes.pyth.network"
           );
-          const priceIds = ["0x7d669ddcdd23d9ef1fa9a9cc022ba055ec900e91c4cb960f3c20429d4447a411"];
+          const priceIds = ["0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f" as any];
           const priceFeedUpdateData =
             await connection.getPriceFeedsUpdateData(priceIds);
           setFeedUpdateData(priceFeedUpdateData);
-          tx = await contract.updatePriceAndDeposit(feedUpdateData, { fee: parseEther("0.0005"), gasLimit }); //deposit 1 celo
+          tx = await contract.updatePriceAndDeposit(feedUpdateData, { fee: parseEther("0.0005"), gasLimit }); //deposit 1 BNB
         }
         const receipt = await tx.wait();
 
@@ -251,10 +251,10 @@ export default function Home() {
 
       try {
         let tx;
-        if (selectedToken === 'CELO') {
-          tx = await contract.withdraw(celoAddress, { gasLimit });
-        } else if (selectedToken === 'cUSD') {
-          tx = await contract.withdraw(cUsdTokenAddress, { gasLimit });
+        if (selectedToken === 'BNB') {
+          tx = await contract.withdraw(BNBAddress, { gasLimit });
+        } else if (selectedToken === 'USDC') {
+          tx = await contract.withdraw(USDCTokenAddress, { gasLimit });
         }
         await tx.wait();
         getBalance();
@@ -282,10 +282,10 @@ export default function Home() {
 
       try {
         let tx;
-        if (selectedToken === 'CELO') {
-          tx = await contract.breakTimelock(celoAddress, { gasLimit });
-        } else if (selectedToken === 'cUSD') {
-          tx = await contract.breakTimelock(cUsdTokenAddress, { gasLimit });
+        if (selectedToken === 'BNB') {
+          tx = await contract.breakTimelock(BNBAddress, { gasLimit });
+        } else if (selectedToken === 'USDC') {
+          tx = await contract.breakTimelock(USDCTokenAddress, { gasLimit });
         }
         await tx.wait();
         getBalance();
@@ -314,12 +314,12 @@ export default function Home() {
               <h3 className="font-semibold text-black mb-4 text-lg">My Savings</h3>
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />CELO:</span>
-                  <span className="text-black text-2xl font-bold">{celoBalance} CELO</span>
+                  <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />BNB:</span>
+                  <span className="text-black text-2xl font-bold">{BNBBalance} BNB</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />cUSD:</span>
-                  <span className="text-black text-2xl font-bold">{cusdBalance} cUSD</span>
+                  <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />USDC:</span>
+                  <span className="text-black text-2xl font-bold">{USDCBalance} USDC</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600"><CurrencyPoundIcon className="mr-2 text-black" />AST:</span>
@@ -334,15 +334,15 @@ export default function Home() {
                   onChange={handleTokenChange}
                   className="w-full rounded-md p-2 shadow bg-black text-white hover:bg-prosperity hover:text-black"
                 >
-                  <option value="cUSD"><CurrencyDollarIcon className="mr-2" />cUSD</option>
-                  <option value="CELO"><CurrencyDollarIcon className="mr-2" />CELO</option>
+                  <option value="USDC"><CurrencyDollarIcon className="mr-2" />USDC</option>
+                  <option value="BNB"><CurrencyDollarIcon className="mr-2" />BNB</option>
                 </select>
               </div>
             </div>
           </div>
         </aside>
         <aside className="w-full lg:w-1/3 p-4">
-          <h3 className="font-semibold text-black mb-4 text-lg">CELO/USD Price change on 24hours Price Chart</h3>
+          <h3 className="font-semibold text-black mb-4 text-lg">BNB/USD Price change on 24hours Price Chart</h3>
           <span className="text-black text-3xl font-semibold">{priceChange} %</span>
         </aside>
         <main className="w-full lg:w-2/3 p-4">

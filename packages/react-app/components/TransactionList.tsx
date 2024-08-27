@@ -38,7 +38,7 @@ const TransactionList: React.FC = () => {
           });
 
           // Fetching transactions from Celo Explorer API
-          const response = await fetch(`https://api-opbnb-testnet.bscscan.com/api
+          const response = await fetch(`https://api-testnet.bscscan.com/api
           ?module=account
           &action=txlist
           &address=${userAddress}
@@ -121,7 +121,7 @@ const TransactionList: React.FC = () => {
                     <XMarkIcon className="h-5 w-5 text-red-500" />
                   )}
                   <a
-                    href={`https://api-opbnb-testnet.bscscan.com/api
+                    href={`https://api-testnet.bscscan.com/api
                     ?module=proxy
                     &action=eth_getTransactionByHash
                     &txhash=${transaction.transactionHash}
