@@ -6,7 +6,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { AppProps } from "next/app";
-import { celo, celoAlfajores } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import Layout from "../components/Layout";
 import "../styles/globals.css";
@@ -28,9 +28,9 @@ const connectors = connectorsForWallets(
 
 const config = createConfig({
   connectors,
-  chains: [celo],
+  chains: [bscTestnet],
   transports: {
-    [celo.id]: http(),
+    [bscTestnet.id]: http(),
   },
 });
 

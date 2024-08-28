@@ -22,15 +22,15 @@ export default function Home() {
 
   const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
-  const [BNBBalance, setBNBBalance] = useState('');
-  const [USDCBalance, setUSDCBalance] = useState('');
+  const [bnbBalance, setbnbBalance] = useState('0');
+  const [usdcBalance, setusdcBalance] = useState('0');
   const [tokenBalance, setTokenBalance] = useState('');
   const [selectedToken, setSelectedToken] = useState('USDC');
   const [isApproved, setIsApproved] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isWaitingTx, setIsWaitingTx] = useState(false);
   const [buttonText, setButtonText] = useState('Approve');
-  const [feedUpdateData, setFeedUpdateData] = useState<Array<string>>([]);
+  const [feedUpdateData, setFeedUpdateData] = useState<Array<string>>([""]);
   const [priceChange, setPriceChange] = useState("");
 
   const getPriceChange = useCallback(async () => {
@@ -39,13 +39,13 @@ export default function Home() {
         const connection = new EvmPriceServiceConnection(
           "https://hermes.pyth.network"
         );
-        const priceIds = "0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f";
+        const priceIds: string[] = ["0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f"];
         const priceFeedUpdateData =
-          await connection.getPriceFeedsUpdateData([priceIds as `0x${string}`,]);
+          await connection.getPriceFeedsUpdateData(priceIds);
         setFeedUpdateData(priceFeedUpdateData);
         console.log("Retrieved Pyth price update:");
         console.log(priceFeedUpdateData);
-
+//WORKS FINE TILL HERE
         let accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
@@ -55,11 +55,10 @@ export default function Home() {
         const signer = await provider.getSigner(userAddress);
         const contract = new Contract(contractAddress, abi, signer);
         const gasLimit = parseInt("6000000");
-        const priceChange = await contract.getPriceChange(feedUpdateData, { fee: parseEther("0.0005"), gasLimit });
+        const priceChange = await contract.getPriceChange(priceFeedUpdateData, { gasLimit }); //ISSUE COMES FROM CALLING THE CONTRACT
         setPriceChange(priceChange);
       } catch (error) {
         console.error("Error fetching price change:", error);
-        toast.error("Error fetching price change");
       }
     }
   }, []);
@@ -77,19 +76,20 @@ export default function Home() {
         const contract = new Contract(contractAddress, abi, signer);
 
         const balanceStruct = await contract.balances(userAddress);
-        if (balanceStruct && balanceStruct.BNBBalance !== undefined) {
-          const BNBBalanceBigInt = formatUnits(balanceStruct.BNBBalance, 18);
-          setBNBBalance(BNBBalanceBigInt.toString());
+        console.log("Balance", balanceStruct);
+        if (balanceStruct && balanceStruct.bnbBalance !== undefined) {
+          const bnbBalanceBigInt = formatUnits(balanceStruct.bnbBalance, 18);
+          setbnbBalance(bnbBalanceBigInt.toString());
 
-          const USDCBalance = await contract.getBalance(userAddress, USDCTokenAddress);
-          if (USDCBalance !== undefined) {
-            const USDCBalanceBigInt = formatUnits(USDCBalance, 18);
-            setUSDCBalance(USDCBalanceBigInt.toString());
+          const usdcBalance = await contract.getBalance(userAddress, USDCTokenAddress);
+          if (usdcBalance !== undefined) {
+            const usdcBalanceBigInt = formatUnits(usdcBalance, 18);
+            setusdcBalance(usdcBalanceBigInt.toString());
+            console.log(usdcBalance);
           }
         }
       } catch (error) {
         console.error("Error fetching balance:", error);
-        toast.error("Error fetching balance");
       }
     }
   }, []);
@@ -113,7 +113,6 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error fetching token balance:", error);
-        toast.error("Error fetching token balance");
       }
     }
   }, []);
@@ -167,10 +166,9 @@ export default function Home() {
       } catch (error) {
         console.error("Error approving spend:", error);
         setIsApproved(false);
-        toast.error('Approval failed!');
       }
     } else {
-      toast.error('Ethereum object not found');
+      console.error('Ethereum object not found');
     }
 
     setIsApproving(false);
@@ -196,18 +194,19 @@ export default function Home() {
 
         let tx;
         if (selectedToken === 'USDC') {
-          tx = await contract.depositUSDC(depositValue, { gasLimit });
+          console.log(depositValue);
+          tx = await contract.deposit(USDCTokenAddress, depositValue, { gasLimit });
 
         }
         else if (selectedToken === 'BNB') {
           const connection = new EvmPriceServiceConnection(
             "https://hermes.pyth.network"
           );
-          const priceIds = "0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f";
+          const priceIds: string[] = ["0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f"];
           const priceFeedUpdateData =
-            await connection.getPriceFeedsUpdateData([priceIds as `0x${string}`,]);
+            await connection.getPriceFeedsUpdateData(priceIds);
           setFeedUpdateData(priceFeedUpdateData);
-          tx = await contract.updatePriceAndDeposit(feedUpdateData, { fee: parseEther("0.0005"), gasLimit }); //deposit 1 BNB
+          tx = await contract.updatePriceAndDeposit(feedUpdateData, { gasLimit }); //deposit 1 BNB
         }
 
         const receipt = await tx.wait();
@@ -226,7 +225,6 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Error making deposit:", error);
-      toast.error('Deposit failed!');
     }
 
     setIsWaitingTx(false);
@@ -260,7 +258,6 @@ export default function Home() {
         toast.success('Withdrawal successful!');
       } catch (error) {
         console.error("Error making withdrawal:", error);
-        toast.error('Withdrawal failed!');
       }
     }
   };
@@ -290,7 +287,6 @@ export default function Home() {
         toast.success('Timelock broken successfully!');
       } catch (error) {
         console.error("Error breaking timelock:", error);
-        toast.error('Error breaking timelock');
       }
     }
   };
@@ -312,15 +308,15 @@ export default function Home() {
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />BNB:</span>
-                  <span className="text-black text-2xl font-bold">{BNBBalance} BNB</span>
+                  <span className="text-black text-2xl font-bold">{bnbBalance} BNB</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600"><CurrencyDollarIcon className="mr-2 text-black" />USDC:</span>
-                  <span className="text-black text-2xl font-bold">{USDCBalance} USDC</span>
+                  <span className="text-black text-2xl font-bold">{usdcBalance} USDC</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600"><CurrencyPoundIcon className="mr-2 text-black" />AST:</span>
-                  <span className="text-black text-2xl font-bold">{tokenBalance} AST</span>
+                  <span className="text-gray-600"><CurrencyPoundIcon className="mr-2 text-black" />AYT:</span>
+                  <span className="text-black text-2xl font-bold">{tokenBalance} AYT</span>
                 </div>
               </div>
               <div>

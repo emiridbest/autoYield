@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { celo } from 'viem/chains';
+import { bscTestnet } from 'viem/chains';
 import { BrowserProvider } from 'ethers';
 import { createPublicClient, http } from 'viem';
 import { CheckIcon, MinusCircleIcon, PlusCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
+
 interface Transaction {
   args: {
     from: string;
@@ -15,14 +16,16 @@ interface Transaction {
   status: boolean;
 }
 
-const YourApiKeyToken = process.env.API_KEY_TOKEN;
+const YourApiKeyToken = process.env.API_KEY_TOKEN || 'your_fallback_api_key';
+
 const truncateAddress = (address: string): string => {
   return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 };
+
 const TransactionList: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const addRecentTransaction = useAddRecentTransaction();
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState<string>('');
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -32,22 +35,14 @@ const TransactionList: React.FC = () => {
           const signer = await provider.getSigner();
           const userAddress = await signer.getAddress();
           setAddress(userAddress);
+
           const publicClient = createPublicClient({
-            chain: celo,
+            chain: bscTestnet,
             transport: http(),
           });
 
-          // Fetching transactions from Celo Explorer API
-          const response = await fetch(`https://api-testnet.bscscan.com/api
-          ?module=account
-          &action=txlist
-          &address=${userAddress}
-          &startblock=0
-          &endblock=99999999
-          &page=1
-          &offset=10
-          &sort=asc
-          &apikey=${YourApiKeyToken}`);
+          // Fetch transactions from BSCScan API
+          const response = await fetch(`https://api-testnet.bscscan.com/api?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=${YourApiKeyToken}`);
           const data = await response.json();
 
           // Process the data into Transaction objects
@@ -72,7 +67,7 @@ const TransactionList: React.FC = () => {
     };
 
     fetchTransactions();
-  }, [address]);
+  }, []); // Empty dependency array to run only on mount
 
   // Function to format the value of transactions
   function formatValue(value: string, decimals = 2): string {
@@ -99,7 +94,7 @@ const TransactionList: React.FC = () => {
         >
           ...recent transactions
         </button>
-        <div className="bg-gypsum shadow-md rounded-lg p-4">
+        <div className="bg-gray-200 shadow-md rounded-lg p-4">
           {transactions && transactions.length > 0 ? (
             transactions.slice(0, 7).map((transaction, index) => (
               <div key={transaction.key} className={`flex flex-row gap-2 items-center justify-between p-4 mb-2 rounded-lg ${index % 2 === 0 ? 'bg-gypsum' : 'bg-gypsum'}`}>
@@ -111,7 +106,7 @@ const TransactionList: React.FC = () => {
                   )}
                   <div className="flex flex-col">
                     <p className="font-semibold text-gray-800">{transaction.args.from !== address ? truncateAddress(transaction.args.from) : truncateAddress(transaction.args.to)}</p>
-                    <p className="text-gray-600 text-sm">{formatValue((parseFloat(transaction.args.value) * 1e-18).toFixed(18))} CELO</p>
+                    <p className="text-gray-600 text-sm">{formatValue((parseFloat(transaction.args.value) * 1e-18).toFixed(18))} BNB</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -121,16 +116,12 @@ const TransactionList: React.FC = () => {
                     <XMarkIcon className="h-5 w-5 text-red-500" />
                   )}
                   <a
-                    href={`https://api-testnet.bscscan.com/api
-                    ?module=proxy
-                    &action=eth_getTransactionByHash
-                    &txhash=${transaction.transactionHash}
-                    &apikey=${YourApiKeyToken}`}
+                    href={`https://testnet.bscscan.com/tx/${transaction.transactionHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-500 font-light text-sm"
                   >
-                    View on Blockscout
+                    View on BSCScan
                   </a>
                 </div>
               </div>
