@@ -1,14 +1,27 @@
-## AutoYield
+AutoYield
 
-A decentralized savings dApp with 3 core features 
-1. An ERC4626 yield vault with superform base strategy
-2. An auto saver implementing chanlink keeper functions to automate savings.
-3. A simple saver for locking up funds for specified period 
+AutoYield is a decentralized savings dApp designed to maximize savings through three core features:
 
-Solution is deployed on BSC testnet and primarily build to function on opera mini's minipay mobile wallet
-The asset category include:
+    ERC4626 Yield Vault: Utilizes an advanced yield optimization strategy with the ERC4626 standard for efficient asset management and yield generation.
 
-1. BNB USD stable: can be deposited in the vault, simple saver and the auto-saver.
+    Auto Saver: Implements Chainlink Keeper functions to automate savings processes, ensuring regular and timely savings without manual intervention.
 
-2. BNB Native Coin: Using `Pyth oracle`, we implemented a dollar-cost-averaging model of savings. Here, `Pyth oracle` updates and pulls the price of BNB/Usd pair at current time abd 24hrs ago. We get the % difference and then check if it has a negative trent of greater than 5% before a deposit is permitted. This is hedging against the devaluation risk associated with holding Native assets as opposed to stablecoins.
+    Simple Saver: Allows users to lock up funds for a specified period, providing a straightforward way to save and earn interest.
 
+Deployment
+
+AutoYield is deployed on the BSC Testnet, providing a reliable environment for testing and interaction. It is primarily designed to function seamlessly with Opera Mini's Minipay mobile wallet, enhancing accessibility and user convenience.
+Asset Categories
+
+    BNB USD Stable: Can be deposited into the Yield Vault, Simple Saver, and Auto Saver. This asset provides stability and flexibility for users.
+
+    BNB Native Coin: Features a dollar-cost-averaging model of savings, utilizing the Pyth Oracle to monitor the BNB/USD price pair. The system checks for a negative trend greater than 5% before permitting deposits, helping to hedge against the devaluation risk associated with native assets compared to stablecoins.
+
+
+Smart Contract Verified at https://testnet.bscscan.com/address/0x1275a54baa91bf247f93a6aa8ba1180f4eca12c5#code
+
+
+## TO DO:
+- Advanced Yield Optimization: The ERC4626 yield vault leverages sophisticated strategies to maximize returns on deposits.
+- Automated Savings: Chainlink Keepers automate the savings process, ensuring efficiency and consistency without requiring user intervention.
+- Smart cobtract audit
